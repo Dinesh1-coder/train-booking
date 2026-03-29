@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Ticket Booking System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0f0e17; --surface: #1a1828; --card: #211f33; --border: #2e2c46;
+            --accent: #e94560; --accent2: #f5a623; --confirm: #00c896;
+            --rac: #f5a623; --waiting: #e94560; --text: #fffffe; --muted: #8e8aa8;
+            --radius: 12px;
+        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px 16px; }
+        .container { max-width: 820px; margin: 0 auto; }
+        header { text-align: center; padding: 40px 20px 30px; position: relative; }
+        header::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:200px; height:3px; background:linear-gradient(90deg,transparent,var(--accent),transparent); }
+        header h1 { font-family:'Syne',sans-serif; font-size:clamp(1.8rem,5vw,2.8rem); font-weight:800; letter-spacing:-1px; }
+        header h1 span { color:var(--accent); }
+        header p { color:var(--muted); margin-top:6px; font-size:0.95rem; }
+        .navbar { display:flex; gap:8px; background:var(--surface); padding:10px; border-radius:var(--radius); margin-bottom:24px; border:1px solid var(--border); flex-wrap:wrap; }
+        .nav-btn { flex:1; min-width:130px; padding:11px 14px; border:none; background:transparent; color:var(--muted); cursor:pointer; border-radius:8px; font-size:13.5px; font-family:'DM Sans',sans-serif; font-weight:500; transition:all 0.2s; }
+        .nav-btn:hover { color:var(--text); background:var(--card); }
+        .nav-btn.active { background:var(--accent); color:#fff; font-weight:600; }
+        .section { display:none; }
+        .section.active { display:block; }
+        .section-title { font-family:'Syne',sans-serif; font-size:1.35rem; font-weight:700; margin-bottom:22px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+        .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
+        .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+        .form-group { display:flex; flex-direction:column; gap:6px; }
+        .form-group.full { grid-column:1/-1; }
+        label { font-size:12.5px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+        input, select { padding:11px 14px; background:var(--card); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; transition:border-color 0.2s; width:100%; }
+        input:focus, select:focus { outline:none; border-color:var(--accent); }
+        select option { background:var(--card); }
+        .btn { padding:12px 20px; border:none; border-radius:8px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:700; font-size:14px; transition:all 0.2s; }
+        .btn-primary { background:var(--accent); color:#fff; width:100%; margin-top:6px; }
+        .btn-primary:hover { background:#c73650; }
+        .btn-primary:disabled { background:#555; cursor:not-allowed; }
+        .btn-danger { background:#2d1a1f; color:var(--accent); border:1px solid var(--accent); margin-top:10px; }
+        .btn-danger:hover { background:var(--accent); color:#fff; }
+        .btn-info { background:var(--card); color:var(--text); border:1px solid var(--border); flex:1; }
+        .btn-info:hover { border-color:var(--accent); color:var(--accent); }
+        .btn-avail { background:var(--accent2); color:#1a1828; width:100%; }
+        .btn-avail:hover { background:#d48a10; }
+        .display-options { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+        .result-box { margin-top:20px; padding:16px; border-radius:var(--radius); border:1px solid var(--border); background:var(--card); display:none; }
+        .result-box.success { border-color:var(--confirm); }
+        .result-box.error { border-color:var(--waiting); }
+        .result-box.info { border-color:var(--border); }
+        .booking-card { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px; }
+        .booking-card.confirmed { border-left:3px solid var(--confirm); }
+        .booking-card.rac { border-left:3px solid var(--rac); }
+        .booking-card.waiting { border-left:3px solid var(--waiting); }
+        .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+        .ticket-type { font-family:'Syne',sans-serif; font-weight:700; font-size:13px; }
+        .passenger-id, .seat-label, .rac-number, .waiting-number { font-size:12px; color:var(--muted); background:var(--surface); padding:3px 8px; border-radius:4px; }
+        .card-body p { font-size:13.5px; color:var(--muted); margin:4px 0; line-height:1.5; }
+        .card-body strong { color:var(--text); }
+        .status-message { margin-top:8px !important; font-weight:600 !important; color:var(--text) !important; }
+        .avail-comp-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; margin:18px 0 10px; color:var(--accent2); }
+        .avail-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; }
+        .avail-item { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:14px 10px; text-align:center; }
+        .avail-item .label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; }
+        .avail-item .count { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; color:var(--confirm); margin:4px 0 2px; }
+        .avail-item .total { font-size:11px; color:var(--muted); }
+        .avail-item.full .count { color:var(--waiting); }
+        .msg-success { color:var(--confirm); font-weight:600; white-space:pre-line; }
+        .msg-error { color:var(--waiting); font-weight:600; }
+        .msg-info { color:var(--muted); }
+        h4.comp-title { font-family:'Syne',sans-serif; font-size:0.85rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin:16px 0 8px; }
+        .spinner { display:inline-block; width:16px; height:16px; border:2px solid #ffffff44; border-top-color:#fff; border-radius:50%; animation:spin 0.6s linear infinite; margin-right:8px; vertical-align:middle; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        @media(max-width:560px) { .form-grid{grid-template-columns:1fr;} .form-group.full{grid-column:auto;} .navbar{flex-direction:column;} .display-options{flex-direction:column;} }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🚂 Train Ticket <span>Booking</span></h1>
+        <p>Sleeper &amp; General · Confirmed / RAC / Waiting</p>
+    </header>
+
+    <nav class="navbar">
+        <button onclick="showSection('booking',this)" class="nav-btn active">📝 Book Ticket</button>
+        <button onclick="showSection('cancel',this)" class="nav-btn">❌ Cancel</button>
+        <button onclick="showSection('display',this)" class="nav-btn">📋 View Bookings</button>
+        <button onclick="showSection('availability',this)" class="nav-btn">📊 Availability</button>
+    </nav>
+
+    <!-- BOOKING -->
+    <div id="booking-section" class="section active">
+        <div class="card">
+            <div class="section-title">Book New Ticket</div>
+            <form id="bookingForm" onsubmit="bookTicket(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Passenger Name</label>
+                        <input type="text" id="name" placeholder="Full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" id="age" min="1" max="120" placeholder="Age" required>
+                    </div>
+                    <div class="form-group">
+                        <label>From</label>
+                        <select id="from" required>
+                            <option value="">Select Station</option>
+                            <option>Chennai</option><option>Bangalore</option>
+                            <option>Hyderabad</option><option>Mumbai</option><option>Delhi</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>To</label>
+                        <select id="to" required>
+                            <option value="">Select Station</option>
+                            <option>Chennai</option><option>Bangalore</option>
+                            <option>Hyderabad</option><option>Mumbai</option><option>Delhi</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Compartment</label>
+                        <select id="compartment" required>
+                            <option value="Sleeper">Sleeper</option>
+                            <option value="General">General</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Berth Preference</label>
+                        <select id="berth" required>
+                            <option value="U">Upper (U)</option>
+                            <option value="M">Middle (M)</option>
+                            <option value="L">Lower (L)</option>
+                            <option value="N">No Preference (N)</option>
+                        </select>
+                    </div>
+                    <div class="form-group full">
+                        <button type="submit" class="btn btn-primary" id="bookBtn">🎫 Book Ticket</button>
+                    </div>
+                </div>
+            </form>
+            <div id="bookingResult" class="result-box"></div>
+        </div>
+    </div>
+
+    <!-- CANCEL -->
+    <div id="cancel-section" class="section">
+        <div class="card">
+            <div class="section-title">Cancel Ticket</div>
+            <div class="form-group">
+                <label>Passenger ID</label>
+                <input type="number" id="cancelId" placeholder="Enter Passenger ID">
+            </div>
+            <button onclick="cancelTicket()" class="btn btn-danger">🗑 Cancel Ticket</button>
+            <div id="cancelResult" class="result-box" style="margin-top:16px;"></div>
+        </div>
+    </div>
+
+    <!-- DISPLAY -->
+    <div id="display-section" class="section">
+        <div class="card">
+            <div class="section-title">View Bookings</div>
+            <div class="display-options">
+                <button onclick="loadConfirmed()" class="btn btn-info">✅ Confirmed</button>
+                <button onclick="loadRAC()" class="btn btn-info">🟡 RAC</button>
+                <button onclick="loadWaiting()" class="btn btn-info">🔴 Waiting</button>
+            </div>
+            <div id="displayResult" class="result-box"></div>
+        </div>
+    </div>
+
+    <!-- AVAILABILITY -->
+    <div id="availability-section" class="section">
+        <div class="card">
+            <div class="section-title">Check Availability</div>
+            <button onclick="checkAvailability()" class="btn btn-avail">🔍 Show Availability</button>
+            <div id="availabilityResult" class="result-box" style="margin-top:16px;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = '/api/tickets';
+
+    function showSection(name, btn) {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(name + '-section').classList.add('active');
+    }
+
+    function showResult(id, content, type) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.display = 'block';
+        el.innerHTML = content;
+        el.className = 'result-box ' + type;
+    }
+
+    // ===== BOOK =====
+    async function bookTicket(e) {
+        e.preventDefault();
+        const name        = document.getElementById('name').value.trim();
+        const age         = parseInt(document.getElementById('age').value);
+        const from        = document.getElementById('from').value;
+        const to          = document.getElementById('to').value;
+        const compartment = document.getElementById('compartment').value;
+        const berthPreference = document.getElementById('berth').value.charAt(0);
+
+        if (!from || !to) return showResult('bookingResult','⚠️ Please select stations!','error');
+        if (from === to)  return showResult('bookingResult','⚠️ Source and destination cannot be same!','error');
+
+        const btn = document.getElementById('bookBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>Booking...';
+
+        try {
+            const res = await fetch(API + '/book', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, age, from, to, compartment, berthPreference })
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                const p = data.passenger;
+                const type = p.ticketType;
+                const cls  = type === 'Confirmed' ? 'confirmed' : type === 'RAC' ? 'rac' : 'waiting';
+                const icon = type === 'Confirmed' ? '✅' : type === 'RAC' ? '🟡' : '🔴';
+                showResult('bookingResult', `
+                    <div class="booking-card ${cls}">
+                        <div class="card-header">
+                            <span class="ticket-type">${icon} ${type}</span>
+                            <span class="passenger-id">ID: ${p.id}</span>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>PNR:</strong> ${p.pnr}</p>
+                            <p><strong>Name:</strong> ${p.name} &nbsp;|&nbsp; <strong>Age:</strong> ${p.age}</p>
+                            <p><strong>Journey:</strong> ${p.from} → ${p.to}</p>
+                            <p><strong>Compartment:</strong> ${p.compartment}</p>
+                            ${p.seatLabel ? '<p><strong>Seat:</strong> ' + p.seatLabel + '</p>' : ''}
+                            <p class="status-message">${data.message}</p>
+                        </div>
+                    </div>`, 'success');
+                document.getElementById('bookingForm').reset();
+            } else {
+                showResult('bookingResult', '<p class="msg-error">❌ ' + data.message + '</p>', 'error');
+            }
+        } catch (err) {
+            showResult('bookingResult', '<p class="msg-error">❌ Server error: ' + err.message + '</p>', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '🎫 Book Ticket';
+        }
+    }
+
+    // ===== CANCEL =====
+    async function cancelTicket() {
+        const id = parseInt(document.getElementById('cancelId').value);
+        if (!id) return showResult('cancelResult','⚠️ Please enter a valid ID','error');
+
+        try {
+            const res = await fetch(API + '/cancel/' + id, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+                showResult('cancelResult', '<p class="msg-success">✅ ' + data.message + '</p>', 'success');
+            } else {
+                showResult('cancelResult', '<p class="msg-error">❌ ' + data.message + '</p>', 'error');
+            }
+            document.getElementById('cancelId').value = '';
+        } catch (err) {
+            showResult('cancelResult', '<p class="msg-error">❌ Server error: ' + err.message + '</p>', 'error');
+        }
+    }
+
+    // ===== CONFIRMED =====
+    async function loadConfirmed() {
+        showResult('displayResult','<p class="msg-info">Loading...</p>','info');
+        try {
+            const res  = await fetch(API + '/confirmed');
+            const list = await res.json();
+            if (!list.length) return showResult('displayResult','<p class="msg-info">📭 No confirmed tickets.</p>','info');
+
+            let html = '';
+            ['Sleeper','General'].forEach(comp => {
+                const items = list.filter(p => p.compartment === comp);
+                if (!items.length) return;
+                html += '<h4 class="comp-title">' + comp + '</h4>';
+                items.forEach(p => {
+                    html += `<div class="booking-card confirmed">
+                        <div class="card-header">
+                            <span class="ticket-type">✅ Confirmed</span>
+                            <span class="seat-label">${p.seatLabel || '-'}</span>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>ID:</strong> ${p.id} &nbsp;|&nbsp; <strong>PNR:</strong> ${p.pnr}</p>
+                            <p><strong>Name:</strong> ${p.name} (Age: ${p.age})</p>
+                            <p><strong>Journey:</strong> ${p.from} → ${p.to}</p>
+                            <p><strong>Berth Pref:</strong> ${p.berthPreference}</p>
+                        </div>
+                    </div>`;
+                });
+            });
+            showResult('displayResult', html, 'info');
+        } catch(err) {
+            showResult('displayResult','<p class="msg-error">❌ ' + err.message + '</p>','error');
+        }
+    }
+
+    // ===== RAC =====
+    async function loadRAC() {
+        showResult('displayResult','<p class="msg-info">Loading...</p>','info');
+        try {
+            const res  = await fetch(API + '/rac');
+            const data = await res.json();
+            let html = '';
+            let total = 0;
+            ['Sleeper','General'].forEach(comp => {
+                const list = data[comp] || [];
+                if (!list.length) return;
+                total += list.length;
+                html += '<h4 class="comp-title">' + comp + '</h4>';
+                list.forEach((p, i) => {
+                    html += `<div class="booking-card rac">
+                        <div class="card-header">
+                            <span class="ticket-type">🟡 RAC</span>
+                            <span class="rac-number">RAC #${i+1}</span>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>ID:</strong> ${p.id} &nbsp;|&nbsp; <strong>PNR:</strong> ${p.pnr}</p>
+                            <p><strong>Name:</strong> ${p.name} (Age: ${p.age})</p>
+                            <p><strong>Journey:</strong> ${p.from} → ${p.to}</p>
+                        </div>
+                    </div>`;
+                });
+            });
+            if (!total) return showResult('displayResult','<p class="msg-info">📭 No RAC tickets.</p>','info');
+            showResult('displayResult', html, 'info');
+        } catch(err) {
+            showResult('displayResult','<p class="msg-error">❌ ' + err.message + '</p>','error');
+        }
+    }
+
+    // ===== WAITING =====
+    async function loadWaiting() {
+        showResult('displayResult','<p class="msg-info">Loading...</p>','info');
+        try {
+            const res  = await fetch(API + '/waiting');
+            const data = await res.json();
+            let html = '';
+            let total = 0;
+            ['Sleeper','General'].forEach(comp => {
+                const list = data[comp] || [];
+                if (!list.length) return;
+                total += list.length;
+                html += '<h4 class="comp-title">' + comp + '</h4>';
+                list.forEach((p, i) => {
+                    html += `<div class="booking-card waiting">
+                        <div class="card-header">
+                            <span class="ticket-type">🔴 Waiting</span>
+                            <span class="waiting-number">WL #${i+1}</span>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>ID:</strong> ${p.id} &nbsp;|&nbsp; <strong>PNR:</strong> ${p.pnr}</p>
+                            <p><strong>Name:</strong> ${p.name} (Age: ${p.age})</p>
+                            <p><strong>Journey:</strong> ${p.from} → ${p.to}</p>
+                        </div>
+                    </div>`;
+                });
+            });
+            if (!total) return showResult('displayResult','<p class="msg-info">📭 No waiting list.</p>','info');
+            showResult('displayResult', html, 'info');
+        } catch(err) {
+            showResult('displayResult','<p class="msg-error">❌ ' + err.message + '</p>','error');
+        }
+    }
+
+    // ===== AVAILABILITY =====
+    async function checkAvailability() {
+        showResult('availabilityResult','<p class="msg-info">Loading...</p>','info');
+        try {
+            const res  = await fetch(API + '/availability');
+            const data = await res.json();
+            let html = '<div>';
+            ['Sleeper','General'].forEach(comp => {
+                const d = data[comp];
+                html += '<div class="avail-comp-title">🚋 ' + comp + '</div><div class="avail-grid">';
+                [['U','Upper'],['M','Middle'],['L','Lower']].forEach(([code, name]) => {
+                    const avail = d[code] ?? 0;
+                    html += `<div class="avail-item ${avail===0?'full':''}">
+                        <div class="label">${name}</div>
+                        <div class="count">${avail}</div>
+                        <div class="total">available</div>
+                    </div>`;
+                });
+                html += `<div class="avail-item ${d.rac===0?'full':''}">
+                    <div class="label">RAC</div><div class="count">${d.rac}</div><div class="total">available</div>
+                </div>`;
+                html += `<div class="avail-item ${d.waiting===0?'full':''}">
+                    <div class="label">Waiting</div><div class="count">${d.waiting}</div><div class="total">available</div>
+                </div>`;
+                html += '</div>';
+            });
+            html += '</div>';
+            showResult('availabilityResult', html, 'info');
+        } catch(err) {
+            showResult('availabilityResult','<p class="msg-error">❌ ' + err.message + '</p>','error');
+        }
+    }
+</script>
+</body>
+</html>

@@ -54,10 +54,4 @@ https://train-booking-sshp.onrender.com
 | GET    | /api/tickets/waiting | Waiting list |
 | GET    | /api/tickets/availability | Seat availability |
 
-## Changes made to your code
 
-Only **one change** in `TicketBooking.java`:
-- `private` fields → `public` (so `TicketController` can access them)
-- `COMPARTMENTS`, `BERTHS`, `BERTH_CAPACITY_PER_TYPE`, `RAC_CAPACITY`, `WAITING_CAPACITY`, `confirmedMap`, `racQueues`, `waitingQueues`
-
-Everything else is **your original code, unchanged**.

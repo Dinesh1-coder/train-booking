@@ -7,19 +7,19 @@ train-booking/
 ├── pom.xml
 └── src/main/
     ├── java/Train/
-    │   ├── package-info.java       ← உங்க original file
-    │   ├── Ticket.java             ← உங்க original file
-    │   ├── Passenger.java          ← உங்க original file
-    │   ├── TicketBooking.java      ← உங்க original file (minor: fields made public)
-    │   ├── TicketController.java   ← உங்க original file
+    │   ├── package-info.java       ← Your original file
+    │   ├── Ticket.java             ← Your original file
+    │   ├── Passenger.java          ← Your original file
+    │   ├── TicketBooking.java      ← Your original file (minor change: fields made public)
+    │   ├── TicketController.java   ← Your original file
     │   └── TrainApplication.java   ← NEW: Spring Boot entry point
     └── resources/
-        ├── application.properties  ← NEW: port config
+        ├── application.properties  ← NEW: Port configuration
         └── static/
-            └── index.html          ← NEW: Frontend (Java API-ஐ fetch() மூலம் call பண்றது)
+            └── index.html          ← NEW: Frontend (calls the Java API using fetch())
 ```
 
-## Run பண்ண
+## How to Run
 
 ### Prerequisites
 - Java 17+
@@ -28,14 +28,14 @@ train-booking/
 ### Steps
 
 ```bash
-# 1. Project folder-க்கு போ
+# 1. Navigate to the project folder
 cd train-booking
 
-# 2. Build & Run
+# 2. Build and run the application
 mvn spring-boot:run
 ```
 
-### Browser-ல open பண்ண
+### Open in a Browser
 ```
 http://localhost:8080
 ```
@@ -47,11 +47,9 @@ https://train-booking-sshp.onrender.com
 
 | Method | URL | Description |
 |--------|-----|-------------|
-| POST   | /api/tickets/book | Ticket book பண்ண |
-| DELETE | /api/tickets/cancel/{id} | Ticket cancel பண்ண |
-| GET    | /api/tickets/confirmed | Confirmed list |
-| GET    | /api/tickets/rac | RAC list |
-| GET    | /api/tickets/waiting | Waiting list |
-| GET    | /api/tickets/availability | Seat availability |
-
-
+| POST   | /api/tickets/book | Book a ticket |
+| DELETE | /api/tickets/cancel/{id} | Cancel a ticket |
+| GET    | /api/tickets/confirmed | List of confirmed tickets |
+| GET    | /api/tickets/rac | List of RAC tickets |
+| GET    | /api/tickets/waiting | List of waiting-list tickets |
+| GET    | /api/tickets/availability | Check seat availability |
